@@ -35,6 +35,10 @@ import (
 // Magic string identifying an Apache Arrow file.
 var Magic = []byte("ARROW1")
 
+func tostr(b []byte) string {
+	return unsafe.String(&b[0], len(b))
+}
+
 const (
 	currentMetadataVersion = MetadataV5
 	minMetadataVersion     = MetadataV4
@@ -184,8 +188,7 @@ func fieldFromFB(field *flatbuf.Field, pos dictutils.FieldPos, memo *dictutils.M
 		o   arrow.Field
 	)
 
-	name := field.Name()
-	o.Name = unsafe.String(&name[0], len(name))
+	o.Name = tostr(field.Name())
 	o.Nullable = field.Nullable()
 	o.Metadata, err = metadataFromFB(field)
 	if err != nil {
@@ -462,7 +465,7 @@ func (fv *fieldVisitor) visit(field arrow.Field) {
 		field.Type = dt.StorageType()
 		fv.visit(field)
 		fv.meta[ExtensionTypeKeyName] = dt.ExtensionName()
-		fv.meta[ExtensionMetadataKeyName] = string(dt.Serialize())
+		fv.meta[ExtensionMetadataKeyName] = dt.Serialize()
 
 	case *arrow.DictionaryType:
 		field.Type = dt.ValueType
@@ -988,7 +991,7 @@ func timeFromFB(data flatbuf.Time) (arrow.DataType, error) {
 
 func timestampFromFB(data flatbuf.Timestamp) (arrow.DataType, error) {
 	unit := unitFromFB(data.Unit())
-	tz := string(data.Timezone())
+	tz := tostr(data.Timezone())
 	return &arrow.TimestampType{Unit: unit, TimeZone: tz}, nil
 }
 
@@ -1044,8 +1047,8 @@ func metadataFromFB(md customMetadataer) (arrow.Metadata, error) {
 		if !md.CustomMetadata(&kv, i) {
 			return arrow.Metadata{}, fmt.Errorf("arrow/ipc: could not read key-value %d from flatbuffer", i)
 		}
-		keys[i] = string(kv.Key())
-		vals[i] = string(kv.Value())
+		keys[i] = tostr(kv.Key())
+		vals[i] = tostr(kv.Value())
 	}
 
 	return arrow.NewMetadata(keys, vals), nil
