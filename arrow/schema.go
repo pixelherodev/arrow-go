@@ -18,6 +18,7 @@ package arrow
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 
@@ -136,20 +137,7 @@ func (md Metadata) sortedIndices() []int {
 }
 
 func (md Metadata) Equal(rhs Metadata) bool {
-	if md.Len() != rhs.Len() {
-		return false
-	}
-
-	idxes := md.sortedIndices()
-	rhsIdxes := rhs.sortedIndices()
-	for i := range idxes {
-		j := idxes[i]
-		k := rhsIdxes[i]
-		if md.keys[j] != rhs.keys[k] || md.values[j] != rhs.values[k] {
-			return false
-		}
-	}
-	return true
+	return maps.Equal(md.ToMap(), rhs.ToMap())
 }
 
 // Schema is a sequence of Field values, describing the columns of a table or
