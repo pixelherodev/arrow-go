@@ -170,7 +170,7 @@ func NewSchema(fields []Field, metadata *Metadata) *Schema {
 
 func NewSchemaWithEndian(fields []Field, metadata *Metadata, e endian.Endianness) *Schema {
 	sc := &Schema{
-		fields:     make([]Field, 0, len(fields)),
+		fields:     fields,
 		index:      make(map[string][]int, len(fields)),
 		endianness: e,
 	}
@@ -181,7 +181,6 @@ func NewSchemaWithEndian(fields []Field, metadata *Metadata, e endian.Endianness
 		if field.Type == nil {
 			panic("arrow: field with nil DataType")
 		}
-		sc.fields = append(sc.fields, field)
 		sc.index[field.Name] = append(sc.index[field.Name], i)
 	}
 	return sc
